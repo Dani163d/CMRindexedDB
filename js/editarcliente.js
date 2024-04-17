@@ -1,23 +1,63 @@
 (function() {
     let DB;
+    let idCliente;
+
     const nombreInput = document.querySelector('#nombre');
     const emailInput = document.querySelector('#email');
     const telefonoInput = document.querySelector('#telefono');
     const empresaInput = document.querySelector('#empresa');
+    const formulario = document.querySelector('#formulario');
 
     document.addEventListener('DOMContentLoaded', () => {
         conectarDB();
 
+        // actualiza el registro
+        formulario.addEventListener('submit', actualizarCliente);
+
 
         // verificar el ID de la URL
         const parametrosURL = new URLSearchParams(window.location.search);
-        const idCliente = parametrosURL.get('id');
+        idCliente = parametrosURL.get('id');
         if(idCliente) {
             setTimeout(() => {
                 obtenerCliente(idCliente);
             }, 180);    
         }
     });
+
+    function actualizarCliente(e) {
+        e.preventDefault();
+
+        if(nombreInput.value === '' || emailInput.value === '' || empresaInput.value === '' ||telefonoInput.value === '' ) {
+            imprimirAlerta('Todos los Campos son obligatorios', 'error');
+            return;
+        }
+
+        // actualizar cliente
+        const clienteActualizado = {
+            nombre: nombreInput.value,
+            email: emailInput.value,
+            telefono: telefonoInput.value,
+            empresa: empresaInput.value,
+            id: Number(idCliente),
+
+        }
+
+        const transaction = DB.transaction(['crm'], 'readwrite');
+        const objectStore = transaction.objectStore('crm');
+
+        objectStore.put(clienteActualizado);
+        transaction.oncomplete = function() {
+            imprimirAlerta('editado correctamente')
+
+            setTimeout(() => {
+                window,location.href = 'index.html'
+            }, 3000)
+        };
+        transaction.onerror = function() {
+            imprimirAlerta('hubo un error', 'error')
+        }
+    }
 
     function obtenerCliente(id) {
         const transaction = DB.transaction(['crm'], 'readonly');
