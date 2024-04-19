@@ -3,11 +3,24 @@
     const formulario = document.querySelector('#formulario');
 
     document.addEventListener('DOMContentLoaded', () => {
+        formulario.addEventListener( 'submit', validarCliente);
 
         conectarDB();
 
-        formulario.addEventListener( 'submit', validarCliente);
+        
     });
+
+    function conectarDB() {
+        const abrirConexion = window.indexedDB.open('crm', 1);
+    
+        abrirConexion.onerror = function() {
+            console.log('Hubo un error');
+        };
+    
+        abrirConexion.onsuccess = function() {
+            DB = abrirConexion.result; 
+        }
+    }
 
     function validarCliente(e) {
         e.preventDefault();
@@ -36,11 +49,12 @@
         crearNuevoCliente(cliente);
     }
 
+
+    
+
     function crearNuevoCliente(cliente) {
         const transaction = DB.transaction(['crm'], 'readwrite');
-
         const objectStore =  transaction.objectStore('crm');
-
         objectStore.add(cliente);
 
         transaction.onerror = function() {
@@ -50,7 +64,7 @@
         transaction.oncomplete = function() {
             console.log('cliente agregado')
 
-            imprimirAlerta('El clinete se agrego correctamente');
+            imprimirAlerta('El cliente se agrego correctamente');
 
             setTimeout(() => {
                 window.location.href = 'index.html';
